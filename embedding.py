@@ -8,7 +8,6 @@ openai.api_key = api_key
 def get_investor_profile_prompt(row):
     investor = row.get('investor_name', 'Unknown Investor').strip()
 
-    # Handle defaults and edge cases
     thesis_raw = str(row.get('thesis', '')).strip()
     thesis = "All" if 'Not Public' in thesis_raw or thesis_raw == '' else thesis_raw
 
@@ -17,19 +16,9 @@ def get_investor_profile_prompt(row):
     ticket_size = row.get('Team Size Range', 'Not Disclosed').strip()  # Rename if needed
 
     return f"""
-        Return the investment preferences in JSON format for the investor below.
-        If any field is unclear or marked as "Not Public", use a sensible default.
-
-        Investor: {investor}
-        Preferred Industries: {thesis}
-        Preferred Stages: {stage}
-        Geographies: {geos}
-        Ticket Size: {ticket_size}
-
-        Output only JSON. Do not add any explanation.
-        Some notes per field to follow while converting in JSON:
-            Geographies: May contin abbreviations, resolve to full country name. If the value is global, don't read further for this field.
-            Preferred Stages: Maybe 1 or 2 values or may be a range(seperated by 'to'). Resolve accordingly
+        {investor} prefers {thesis} (sector) startups which have their raising stage as {stage}. {investor} focuses on {geos} countries
+        with an average ticke size ranging as {ticket_size}.
+        (Note the curency in ticket size)
         """
 
 
@@ -41,7 +30,6 @@ def get_llm_profile(prompt):
     )
     return response['choices'][0]['message']['content']
 
-# Step 2: Get embedding for the profile
 def get_embedding(text):
     response = openai.Embedding.create(
         model="text-embedding-3-small",

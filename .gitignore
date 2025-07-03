@@ -29,3 +29,6 @@ Thumbs.db
 # Build artifacts
 build/
 dist/
+
+#todo
+todo.md
