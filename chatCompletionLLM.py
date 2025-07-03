@@ -1,16 +1,15 @@
-def fill_extra_matches(num, final_matches):
+import openai
+from api_keys import api_key
+
+openai.api_key = api_key
+
+def fill_extra_matches(num, final_matches, startup_query):
     if num==0:
         return []
-    startup_attrs = {  # The incoming startup query
-        "sector": "FinTech",
-        "stage": "Seed",
-        "geo": "India",
-    }
 
-    # Generate the prompt
     prompt = f"""
     Based on the following startup profile:
-    {startup_attrs}
+    {startup_query}
 
     Please suggest {num} investors (with name and brief profile) who are likely to be a match, excluding any of the following already matched investors: {[m['investor'] for m in final_matches]}.
     Return the output in this format:

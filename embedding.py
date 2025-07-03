@@ -18,17 +18,17 @@ def get_investor_profile_prompt(row):
     return f"""
         {investor} prefers {thesis} (sector) startups which have their raising stage as {stage}. {investor} focuses on {geos} countries
         with an average ticke size ranging as {ticket_size}.
-        (Note the curency in ticket size)
+        (curency in ticket size could be ruppees, dollars or euros based on it's signature)
         """
 
 
-def get_llm_profile(prompt):
-    response = openai.ChatCompletion.create(
-        model='gpt-4o',
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
-    )
-    return response['choices'][0]['message']['content']
+# def get_llm_profile(prompt):
+#     response = openai.ChatCompletion.create(
+#         model='gpt-4o',
+#         messages=[{"role": "user", "content": prompt}],
+#         temperature=0.2
+#     )
+#     return response['choices'][0]['message']['content']
 
 def get_embedding(text):
     response = openai.Embedding.create(

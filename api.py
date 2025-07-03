@@ -17,14 +17,20 @@ app.add_middleware(
 openai.api_key = api_key
 collection = chromadb.PersistentClient(path="./chroma-db").get_or_create_collection("investors")
 
-class Startup(BaseModel):
-    description: str
+class StartupAttrs(BaseModel):
+    industry: str
+    stage: str
+    country: str
+    ask: str
 
 @app.post("/match")
-def match_startup(startup: Startup):
+def run_api(startup_attrs: StartupAttrs):
+    formatted_prompt = get_incoming_startup_prompt(startup_attrs)
+    match_startup(formatted_prompt)
 
-    formatted_prompt = get_incoming_startup_prompt(startup)
-    emb = openai.Embedding.create(model="text-embedding-3-small", input=[formatted_prompt])
+
+def match_startup(startup):
+    emb = openai.Embedding.create(model="text-embedding-3-small", input=[startup])
     query_embedding = emb["data"][0]["embedding"]
 
     results = collection.query(query_embeddings=[query_embedding], n_results=3,  include=["distances", "documents", "metadatas"])
@@ -40,4 +46,4 @@ def match_startup(startup: Startup):
             })
 
     if len(final_matches) < 5:
-        fill_extra_matches(5-len(final_matches), final_matches)
+        fill_extra_matches(5-len(final_matches), final_matches, startup)
