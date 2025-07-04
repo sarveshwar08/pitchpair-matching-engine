@@ -1,17 +1,20 @@
-import openai
+from openai import OpenAI
 from api_keys import api_key
+from utils import parse_llm_json_string
 
-openai.api_key = api_key
+client = OpenAI()
 
-def fill_extra_matches(num, final_matches, startup_query):
+
+def fill_extra_matches(num, startup_query, final_matches = []):
+    
     if num==0:
         return []
 
     prompt = f"""
-    Based on the following startup profile:
-    {startup_query}
+            Based on the following startup profile:
+            {startup_query}
 
-    Please suggest {num} investors (with name and brief profile) who are likely to be a match, excluding any of the following already matched investors: {[m['investor'] for m in final_matches]}.
+    Please suggest {num} investors (with name and brief profile) who are likely to be a match. excluding any of the following already matched investors: {[m['investor'] for m in final_matches]}
     Return the output in this format:
     [
     {{
@@ -23,16 +26,22 @@ def fill_extra_matches(num, final_matches, startup_query):
     """
 
     # Call the LLM
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
 
-    print(response["choices"][0]["message"]["content"])
-    # # Parse LLM response
-    # try:
-    #     extra_matches = eval(response["choices"][0]["message"]["content"])
-    #     final_matches.extend(extra_matches)
-    # except Exception as e:
-    #     print("Failed to parse LLM response:", e)
+    extra_matches = parse_llm_json_string((response.choices[0].message.content).strip())
+
+    for match in extra_matches:
+        match['external'] = 'Y'
+    
+    final_matches.extend(extra_matches)
+
+    return final_matches
+
+
+startup_q = """We are a Edtech/AI sector startup, looking for Seed (Pre-Series A at time of funding) funding. We are based out of India (global users, HQ Lucknow)
+            and have an ask of $1200K."""
+fill_extra_matches(2, startup_q)

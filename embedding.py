@@ -1,9 +1,7 @@
-import openai
-import pandas as pd
-from chroma import chroma_client, collection
+from openai import OpenAI
 from api_keys import api_key
 
-openai.api_key = api_key
+client = OpenAI()
 
 def get_investor_profile_prompt(row):
     investor = row.get('investor_name', 'Unknown Investor').strip()
@@ -13,26 +11,14 @@ def get_investor_profile_prompt(row):
 
     stage = row.get('stage', 'Any Stage').strip()
     geos = row.get('geographies_funded', 'Global').strip()
-    ticket_size = row.get('Team Size Range', 'Not Disclosed').strip()  # Rename if needed
+    ticket_size = row.get('ticket_size', 'Not Disclosed').strip() 
 
-    return f"""
-        {investor} prefers {thesis} (sector) startups which have their raising stage as {stage}. {investor} focuses on {geos} countries
-        with an average ticke size ranging as {ticket_size}.
-        (curency in ticket size could be ruppees, dollars or euros based on it's signature)
-        """
+    return f"""{investor} prefers {thesis} (sector) startups which have their raising stage as {stage}. {investor} focuses on {geos} countries with an average ticket size ranging as {ticket_size}."""
 
-
-# def get_llm_profile(prompt):
-#     response = openai.ChatCompletion.create(
-#         model='gpt-4o',
-#         messages=[{"role": "user", "content": prompt}],
-#         temperature=0.2
-#     )
-#     return response['choices'][0]['message']['content']
 
 def get_embedding(text):
-    response = openai.Embedding.create(
-        model="text-embedding-3-small",
+    response = client.embeddings.create(
+        model="text-embedding-3-large",
         input=[text]
     )
-    return response["data"][0]["embedding"]
+    return response.data[0].embedding
